@@ -39,3 +39,30 @@ Merge two files together:
 combined_data <- control %>% 
   bind_rows(test)
 ```
+
+## Rename Colums 
+
+```{r}
+combined_data <- combined_data %>% 
+  rename(Campaign_Name = `Campaign Name`,
+         Spend = `Spend [USD]`,
+         Impressions = `# of Impressions`,
+         Clicks = `# of Website Clicks`,
+         Searches = `# of Searches`,
+         View_Content = `# of View Content`,
+         Add_Cart = `# of Add to Cart`,
+         Purchase = `# of Purchase`)
+```
+
+```{r}
+combined_data %>% 
+  group_by(Campaign_Name) %>% 
+  summarise(mean_spend = mean(Spend),
+            mean_impres = mean(Impressions, na.rm = TRUE),
+            mean_reach = mean(Reach, na.rm = TRUE),
+            mean_clicks = mean(Clicks, na.rm = TRUE),
+            mean_seraches = mean(Searches, na.rm = TRUE),
+            mean_view_content = mean(View_Content, na.rm = TRUE),
+            mean_add_carts = mean(Add_Cart, na.rm = TRUE),
+            mean_purchese = mean(Purchase, na.rm = TRUE))
+```
