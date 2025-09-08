@@ -7,12 +7,6 @@ editor: visual
 
 # A/B Test Analyzer
 
-## Libraries
-
-```{r}
-library(tidyverse)
-```
-
 ## Introduction
 
 -   AB testing website
@@ -21,12 +15,27 @@ library(tidyverse)
 
 -   30 days
 
--   
+## Libraries
 
-## Load Data
+```{r}
+library(tidyverse)
+```
+
+## Input
+
+### Load Data
 
 ```{r}
 control <- read_delim('data/control_group.csv', delim = ';')
 test <- read_delim('data/test_group.csv', delim = ';')
 
+```
+
+### Merge Data
+
+Merge two files together:
+
+```{r}
+combined_data <- control %>% 
+  bind_rows(test)
 ```
