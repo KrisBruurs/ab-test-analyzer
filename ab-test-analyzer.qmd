@@ -7,26 +7,10 @@ editor: visual
 
 # A/B Test Analyzer
 
+## Introduction
+
 ## Libraries
 
 ```{r}
 library(tidyverse)
-```
-
-## Introduction
-
--   AB testing website
-
--   control/experimental version
-
--   30 days
-
--   
-
-## Load Data
-
-```{r}
-control <- read_delim('data/control_group.csv', delim = ';')
-test <- read_delim('data/test_group.csv', delim = ';')
-
 ```
