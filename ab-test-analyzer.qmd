@@ -9,6 +9,28 @@ editor: visual
 
 ## Introduction
 
+The dataset shows the results of an A/B test for a fictional company's website. The outputs are the following variables:
+
+-   **Campaign Name:** Name of the campaign version (*Control / Test*)
+
+-   **Date:** Date of the record
+
+-   **Spend:** Amount spend on the campaign in USD
+
+-   **Number of Impressions:** Number of impressions the ad crossed through the campaign
+
+-   **Reach:** The number of unique impressions received on the ad
+
+-   **Number of Website Clicks:** Number of website clicks received through the ad
+
+-   **Number of Searches:** Number of users who performed searches on the website
+
+-   **Number of View Content:** Number of users who viewed products and content on the website
+
+-   **Number of Add to Cart:** Number of users who added products to the cart
+
+-   **Number of Purchase:** Number of purchases
+
 -   AB testing website
 
 -   control/experimental version
@@ -40,7 +62,7 @@ combined_data <- control %>%
   bind_rows(test)
 ```
 
-## Rename Colums 
+## Rename Colums
 
 ```{r}
 combined_data <- combined_data %>% 
@@ -54,15 +76,37 @@ combined_data <- combined_data %>%
          Purchase = `# of Purchase`)
 ```
 
+Inspection of the data shows that the control campaign has not collected data except for costs. Therefore, this row is removed
+
+```{r}
+combined_data <- combined_data %>% 
+  na.omit()
+```
+
+```{r}
+combined_data %>% 
+  ggplot(aes(x = Campaign_Name, y = Spend, fill = Campaign_Name)) +
+  geom_col() +
+  labs(y = 'Spend in USD',
+       x = NULL,
+       fill = "Campaign Version",
+       title = 'Spenditure Between Campaign Versions') +
+  theme(axis.text.x = element_blank())
+  
+```
+
 ```{r}
 combined_data %>% 
   group_by(Campaign_Name) %>% 
-  summarise(mean_spend = mean(Spend),
-            mean_impres = mean(Impressions, na.rm = TRUE),
-            mean_reach = mean(Reach, na.rm = TRUE),
-            mean_clicks = mean(Clicks, na.rm = TRUE),
-            mean_seraches = mean(Searches, na.rm = TRUE),
-            mean_view_content = mean(View_Content, na.rm = TRUE),
-            mean_add_carts = mean(Add_Cart, na.rm = TRUE),
-            mean_purchese = mean(Purchase, na.rm = TRUE))
+  summarize(mean_spend = mean(Spend))
 ```
+
+```{r}
+2563.067 - 2304.069
+```
+
+The Test Campaign is on average about \$259 dollar more expensive per day than the Control Campaign.
+
+### Hypothesis Testing
+
+Unfortunately the columns only show the amount of purchases and do not add the average dollar amount per purchase. Therefore, the amount of purchases will be used as the dependent variable and the Campaign Version as the independent variable.
