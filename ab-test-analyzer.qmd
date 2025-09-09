@@ -12,22 +12,20 @@ editor: visual
 -   1\. Introduction
 -   2\. Data Handling
     -   2.1. Data Preperation
+    -   2.2 Data Exploration
 -   3\. Hypothesis Testing
-    -   3.1.1 H1 — Code
-
-    -   3.1.2 H1 — Report
-
-    -   3.2.1 H2 — Code
-
-    -   3.2.2 H2 — Report
-
-    -   3.3.1 H3 — Code
-
-    -   3.3.2 H3 — Report
-
-    -   3.4.1 H4 — Code
-
-    -   3.4.2 H4 — Report
+    -   3.1 **H1:** Purchases ÷ Impressions (purchase conversion rate)
+        -   3.1.1 Code
+        -   3.1.2 Report
+    -   3.2 **H2:** Reach ÷ Impressions (unique reach ratio)
+        -   3.2.1 Code
+        -   3.2.2 Report
+    -   3.3 **H3:** Purchases ÷ Add to Cart (checkout conversion)
+        -   3.3.1 Code
+        -   3.3.2 Report
+    -   3.4 **H4:** Searches/View Content/Add to Cart ÷ Impressions (upper/mid-funnel rates)
+        -   3.4.1 Code
+        -   3.4.2 Report
 -   4\. Final Report
 
 ## 1. Introduction
@@ -57,15 +55,17 @@ However, the data allows for an analysis of engagement. Questions that can be an
 
 -   Does the test campaign convert more impressions into searches/view content/add to cart than the control campaign?
 
-## Libraries
+## 2. Data Handling
+
+### 2.1 Data Preparation
+
+#### Load Libraries
 
 ```{r}
 library(tidyverse)
 ```
 
-## Input
-
-### Load Data
+#### Load Data
 
 ```{r}
 control <- read_delim('data/control_group.csv', delim = ';')
@@ -73,7 +73,7 @@ test <- read_delim('data/test_group.csv', delim = ';')
 
 ```
 
-### Merge Data
+#### Merge Data
 
 Merge two files together:
 
@@ -82,7 +82,7 @@ combined_data <- control %>%
   bind_rows(test)
 ```
 
-## Rename Colums
+#### Rename Variables
 
 ```{r}
 combined_data <- combined_data %>% 
@@ -96,12 +96,17 @@ combined_data <- combined_data %>%
          Purchase = `# of Purchase`)
 ```
 
+#### Data Cleaning
+
 Inspection of the data shows that the control campaign has not collected data except for costs. Therefore, this row is removed
 
 ```{r}
-combined_data <- combined_data %>% 
-  na.omit()
+combined_data <- combined_data %>%
+  filter(!(is.na(Impressions) & is.na(Clicks) & is.na(Searches) &
+           is.na(View_Content) & is.na(Add_Cart) & is.na(Purchase)))
 ```
+
+### 2.2 Data Exploration
 
 ```{r}
 combined_data %>% 
@@ -116,13 +121,22 @@ combined_data %>%
 ```
 
 ```{r}
-combined_data %>% 
+mean_spend_control <- combined_data %>% 
   group_by(Campaign_Name) %>% 
-  summarize(mean_spend = mean(Spend))
+  summarize(mean_spend = mean(Spend)) %>% 
+  pluck(2,1)
+
+mean_spend_test <- combined_data %>% 
+  group_by(Campaign_Name) %>% 
+  summarize(mean_spend = mean(Spend)) %>% 
+  pluck(2,2)
+
+avg_spend_diff <- mean_spend_test - mean_spend_control
+round(avg_spend_diff, 2)
 ```
 
 ```{r}
-2563.067 - 2304.069
+
 ```
 
 The Test Campaign is on average about \$259 dollar more expensive per day than the Control Campaign.
