@@ -7,35 +7,55 @@ editor: visual
 
 # A/B Test Analyzer
 
-## Introduction
+## 0. Contents
 
-The dataset shows the results of an A/B test for a fictional company's website. The outputs are the following variables:
+-   1\. Introduction
+-   2\. Data Handling
+    -   2.1. Data Preperation
+-   3\. Hypothesis Testing
+    -   3.1.1 H1 — Code
+
+    -   3.1.2 H1 — Report
+
+    -   3.2.1 H2 — Code
+
+    -   3.2.2 H2 — Report
+
+    -   3.3.1 H3 — Code
+
+    -   3.3.2 H3 — Report
+
+    -   3.4.1 H4 — Code
+
+    -   3.4.2 H4 — Report
+-   4\. Final Report
+
+## 1. Introduction
+
+The dataset shows the results of a 30 day A/B test for a fictional company's website. The outputs are the following variables:
 
 -   **Campaign Name:** Name of the campaign version (*Control / Test*)
-
 -   **Date:** Date of the record
-
 -   **Spend:** Amount spend on the campaign in USD
-
 -   **Number of Impressions:** Number of impressions the ad crossed through the campaign
-
 -   **Reach:** The number of unique impressions received on the ad
-
 -   **Number of Website Clicks:** Number of website clicks received through the ad
-
 -   **Number of Searches:** Number of users who performed searches on the website
-
 -   **Number of View Content:** Number of users who viewed products and content on the website
-
 -   **Number of Add to Cart:** Number of users who added products to the cart
-
 -   **Number of Purchase:** Number of purchases
 
--   AB testing website
+The data shows no **Average Spend per Purchase** variable. Therefore a complete analysis of campaign effectiveness gets harder. Metrics such as ROAS or ROI are impossible to measure with the available data.
 
--   control/experimental version
+However, the data allows for an analysis of engagement. Questions that can be answered are:
 
--   30 days
+-   Does the test campaign convert more impressions into purchases than the control campaign?
+
+-   Does the test campaign have more impressions from unique users than the control campaign?
+
+-   Does the test campaign convert more 'add to carts' into purchases than the control campaign?
+
+-   Does the test campaign convert more impressions into searches/view content/add to cart than the control campaign?
 
 ## Libraries
 
@@ -109,4 +129,66 @@ The Test Campaign is on average about \$259 dollar more expensive per day than t
 
 ### Hypothesis Testing
 
-Unfortunately the columns only show the amount of purchases and do not add the average dollar amount per purchase. Therefore, the amount of purchases will be used as the dependent variable and the Campaign Version as the independent variable.
+*H1:* Does the test campaign convert more impressions into purchases than the control campaign?
+
+```{r}
+totals <- combined_data %>% 
+  group_by(Campaign_Name) %>% 
+  summarise(sum_impressions = sum(Impressions),
+            sum_purchase = sum(Purchase),
+            sum_reach = sum(Reach),
+            sum_add_cart = sum(Add_Cart),
+            sum_clicks = sum(Clicks),
+            sum_view_content = sum(View_Content),
+            sum_searches = sum(Searches),
+            sum_spend = sum(Spend))
+totals
+```
+
+#### Impression / Purchase
+
+```{r}
+prop.test(x = totals$sum_purchase, 
+          n = totals$sum_impressions,
+          alternative = 'two.sided')
+```
+
+#### Reach / Purchase
+
+```{r}
+prop.test(x = totals$sum_purchase, 
+          n = totals$sum_reach,
+          alternative = 'two.sided')
+```
+
+#### Impressions / Reach
+
+-   Does the test campaign have more impressions from unique users than the control campaign?
+
+```{r}
+prop.test(x = totals$sum_reach,
+          n = totals$sum_impressions,
+          alternative = 'two.sided')
+```
+
+#### H3
+
+-   Does the test campaign convert more 'add to carts' into purchases than the control campaign?
+
+```{r}
+prop.test(x = totals$sum_purchase,
+          n = totals$sum_add_cart,
+          alternative = 'two.sided')
+```
+
+```{r}
+totals %>% 
+  group_by(Campaign_Name) %>% 
+  summarize(cpp = sum_spend/sum_purchase)
+```
+
+```{r}
+prop.test(x = totals$sum_purchase,
+          n = totals$sum_spend,
+          alternative = 'two.sided')
+```
