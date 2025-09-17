@@ -47,13 +47,14 @@ The data shows no **Average Spend per Purchase** variable. Therefore a complete 
 
 However, the data allows for an analysis of engagement. Questions that can be answered are:
 
--   Does the test campaign convert more impressions into purchases than the control campaign?
-
--   Does the test campaign have more impressions from unique users than the control campaign?
-
--   Does the test campaign convert more 'add to carts' into purchases than the control campaign?
-
--   Does the test campaign convert more impressions into searches/view content/add to cart than the control campaign?
+1.  **Does the test campaign convert more impressions into purchases than the control campaign?**
+    -   *H1:* The test campaign convert more impressions into purchases than the control campaign.
+2.  **Does the test campaign have more impressions from unique users than the control campaign?**
+    -   *H2:* The test campaign has more impressions from unique users than the control campaign.
+3.  **Does the test campaign convert more 'add to carts' into purchases than the control campaign?**
+    -   *H3:* The test campaign converts more 'add to carts' into purchases than the control campaign.
+4.  **Does the test campaign have a lower cost per purchase than the control campaign?**
+    -   *H4:* The test campaign has a lower cost per purchase than the control campaign.
 
 ## 2. Data Handling
 
@@ -62,12 +63,14 @@ However, the data allows for an analysis of engagement. Questions that can be an
 #### Load Libraries
 
 ```{r}
+#| message: FALSE
 library(tidyverse)
 ```
 
 #### Load Data
 
 ```{r}
+#| message: FALSE
 control <- read_delim('data/control_group.csv', delim = ';')
 test <- read_delim('data/test_group.csv', delim = ';')
 
@@ -98,9 +101,18 @@ combined_data <- combined_data %>%
 
 #### Data Cleaning
 
-Inspection of the data shows that the control campaign has not collected data except for costs. Therefore, this row is removed
+Check the data for NA's:
 
 ```{r}
+anyNA(combined_data)
+```
+
+This shows that there are NA's present in the data. As the data has 60 rows, a manual inspection of the data is executed.
+
+This inspection of the data shows that one day in the control campaign has not collected data except for costs. Therefore, this row is removed
+
+```{r}
+#| message: false
 combined_data <- combined_data %>%
   filter(!(is.na(Impressions) & is.na(Clicks) & is.na(Searches) &
            is.na(View_Content) & is.na(Add_Cart) & is.na(Purchase)))
@@ -121,6 +133,7 @@ combined_data %>%
 ```
 
 ```{r}
+#| message: false
 mean_spend_control <- combined_data %>% 
   group_by(Campaign_Name) %>% 
   summarize(mean_spend = mean(Spend)) %>% 
@@ -132,18 +145,12 @@ mean_spend_test <- combined_data %>%
   pluck(2,2)
 
 avg_spend_diff <- mean_spend_test - mean_spend_control
-round(avg_spend_diff, 2)
+final_spend_diff = round(avg_spend_diff, 2)
 ```
 
-```{r}
+The Test Campaign is on average about \$`r final_spend_diff` dollar more expensive per day than the Control Campaign.
 
-```
-
-The Test Campaign is on average about \$259 dollar more expensive per day than the Control Campaign.
-
-### Hypothesis Testing
-
-*H1:* Does the test campaign convert more impressions into purchases than the control campaign?
+## 3. Hypothesis Testing
 
 ```{r}
 totals <- combined_data %>% 
@@ -159,7 +166,11 @@ totals <- combined_data %>%
 totals
 ```
 
-#### Impression / Purchase
+### 3.1 H1 Impressions — Purchases
+
+*H1:* The test campaign convert more impressions into purchases than the control campaign.
+
+#### Code
 
 ```{r}
 prop.test(x = totals$sum_purchase, 
@@ -167,17 +178,17 @@ prop.test(x = totals$sum_purchase,
           alternative = 'two.sided')
 ```
 
-#### Reach / Purchase
+#### Report
 
-```{r}
-prop.test(x = totals$sum_purchase, 
-          n = totals$sum_reach,
-          alternative = 'two.sided')
-```
+To test whether the test campaign converted more impressions into purchases than the control campaign, a chi-square test of equal proportions showed that the purchase rate differed significantly between control group (.48%) and the test group (.70%), χ²(1, N = *total impressions*) = 1140.40, p \< .001. The difference in proportions was −0.0022, 95% CI \[−0.00235, −0.00208\].
 
-#### Impressions / Reach
+The test campaign achieved a significantly higher conversion rate than the control campaign, supporting the hypothesis that the test campaign generates more purchases per impression.
 
--   Does the test campaign have more impressions from unique users than the control campaign?
+### 3.2 H2 Impressions — Reach
+
+*H2:* The test campaign has more impressions from unique users than the control campaign.
+
+#### Code
 
 ```{r}
 prop.test(x = totals$sum_reach,
@@ -185,9 +196,17 @@ prop.test(x = totals$sum_reach,
           alternative = 'two.sided')
 ```
 
-#### H3
+#### Report
 
--   Does the test campaign convert more 'add to carts' into purchases than the control campaign?
+To test whether the test campaign has more impressions from unique users than the control campaign, a chi-square test of equal proportions showed that the proportions of impressions coming from unique users differed significantly between the control campaign (81,1%) and the test campaign (71,7%), χ²(1, N = *total impressions*) = 65,577, p \< .001. The difference in proportions was 0.094, 95% CI \[0.093, 0.094\].
+
+The control campaign had a significantly higher proportion of impressions from unique users than the test campaign, contrary to the hypothesis that the test campaign would generate more unique-user impressions.
+
+### 3.3 H3 Add to Carts — Purchases
+
+*H3:* The test campaign converts more 'add to carts' into purchases than the control campaign.
+
+#### Code
 
 ```{r}
 prop.test(x = totals$sum_purchase,
@@ -195,14 +214,16 @@ prop.test(x = totals$sum_purchase,
           alternative = 'two.sided')
 ```
 
-```{r}
-totals %>% 
-  group_by(Campaign_Name) %>% 
-  summarize(cpp = sum_spend/sum_purchase)
-```
+#### Report
 
-```{r}
-prop.test(x = totals$sum_purchase,
-          n = totals$sum_spend,
-          alternative = 'two.sided')
-```
+To test whether the test campaign converted more “add to carts” into purchases than the control campaign, a chi-square test of equal proportions showed that the conversion rate from add-to-carts to purchases differed significantly between the control version (40.2%) and the test version (59.1%), χ²(1, N = *total add-to-carts*) = 2226.70, p \< .001. The difference in proportions was −0.189, 95% CI \[−0.197, −0.181\].
+
+The test campaign converted a significantly greater proportion of add-to-carts into purchases compared to the control campaign, supporting the hypothesis that the test campaign was more effective at driving purchases from add-to-carts.
+
+### 3.4 H4 CPP — Advertisement Version
+
+##### Codel
+
+##### Report
+
+## 4. Final Report
